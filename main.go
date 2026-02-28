@@ -4,9 +4,36 @@ import (
     "bufio"
     "syscall"
     "fmt"
-    "strings"
+//    "strings"
     "os"
+    "unicode"
 )
+
+func Fields(s string) []string {
+    var fields []string
+
+    start := 0
+    var in_quote bool = false
+
+    for i, r := range s {
+        if unicode.IsSpace(r) {
+            if (start < i) && (!in_quote) {
+                fields = append(fields, s[start:i])
+            }
+            if !in_quote {
+                start = i+1
+            }
+        }
+        if r == '"' {
+            in_quote = !in_quote
+        }
+    }
+    if start != len(s) {
+        fields = append(fields, s[start:])
+    }
+    fmt.Println(len(fields))
+    return fields
+}
 
 func main() {
     var command string
@@ -23,8 +50,8 @@ func main() {
             break
         }
         command = scanner.Text()
-        fields = strings.Fields(command)
-        arg_vars = fields[0:]
+        fields = Fields(command)
+        arg_vars = fields
         execable_fp = fields[0]
         fmt.Println(arg_vars)
 
