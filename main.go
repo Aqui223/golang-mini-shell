@@ -31,7 +31,6 @@ func Fields(s string) []string {
     if start != len(s) {
         fields = append(fields, s[start:])
     }
-    fmt.Println(len(fields))
     return fields
 }
 
@@ -41,11 +40,12 @@ func main() {
     var fields []string
     var arg_vars []string
     var env_vars []string
+    var status syscall.WaitStatus
 
     scanner := bufio.NewScanner(os.Stdin)
 
     for {
-        fmt.Print("~$ ")
+        fmt.Print("$ ")
         if !scanner.Scan() {
             break
         }
@@ -53,8 +53,16 @@ func main() {
         fields = Fields(command)
         arg_vars = fields
         execable_fp = fields[0]
-        fmt.Println(arg_vars)
-
-        syscall.Exec(execable_fp, arg_vars, env_vars)
+        id, _, _ := syscall.Syscall(syscall.SYS_FORK, 0, 0, 0)
+        if id == 0 {
+            syscall.Exec(execable_fp, arg_vars, env_vars)
+            return;
+        } else {
+            _, err := syscall.Wait4(int(id), &status, 0, nil);
+            if err != nil {
+                fmt.Print("Wait4 syscall returned error:")
+                fmt.Print(err)
+            }
+        }
     }
 }
