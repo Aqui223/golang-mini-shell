@@ -1,11 +1,12 @@
 package main
 
 import (
-    "bufio"
+    //"bufio"
     "syscall"
     "fmt"
 //    "strings"
     "os"
+    "os/exec"
     "unicode"
 )
 
@@ -42,14 +43,28 @@ func main() {
     var env_vars []string
     var status syscall.WaitStatus
 
-    scanner := bufio.NewScanner(os.Stdin)
+    exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
+    exec.Command("stty", "-F", "-echo").Run()
 
     for {
+        command = ""
         fmt.Print("$ ")
-        if !scanner.Scan() {
-            break
+        var b []byte = make([]byte, 1)
+        for {
+            os.Stdin.Read(b)
+            if b[0] == 13 {
+                break
+            } else if b[0] == 127 && len(command) != 0 {
+                command = command[:len(command)-1]
+                fmt.Print("\x1b[3D   \x1b[3D")
+            } else {
+                command += string([]byte{b[0]})
+            }
         }
-        command = scanner.Text()
+        fmt.Print("\x1b[2D  \n")
+        if command == "exit" {
+            return
+        }
         fields = Fields(command)
         arg_vars = fields
         execable_fp = fields[0]
@@ -60,8 +75,9 @@ func main() {
         } else {
             _, err := syscall.Wait4(int(id), &status, 0, nil);
             if err != nil {
-                fmt.Print("Wait4 syscall returned error:")
+                fmt.Print("Wait4 syscall returned error: ")
                 fmt.Print(err)
+                fmt.Print("\n")
             }
         }
     }
