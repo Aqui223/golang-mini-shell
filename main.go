@@ -65,7 +65,7 @@ func main() {
 
     for {
         command = ""
-        if syscall.Getuid() == 0 {
+        if syscall.Getuid() == 0 { // shouldn't even work
             fmt.Print("# ")
         } else {
             fmt.Print("$ ")
