@@ -48,7 +48,11 @@ func main() {
 
     for {
         command = ""
-        fmt.Print("$ ")
+        if syscall.Getuid() == 0 {
+            fmt.Print("# ")
+        } else {
+            fmt.Print("$ ")
+        }
         var b []byte = make([]byte, 1)
         for {
             os.Stdin.Read(b)
@@ -68,6 +72,10 @@ func main() {
         fields = Fields(command)
         arg_vars = fields
         execable_fp = fields[0]
+        if execable_fp == "cd" {
+            syscall.Chdir(fields[1])
+            continue
+        }
         err := syscall.Access("/bin/"+execable_fp, syscall.F_OK)
         if err == nil {
             execable_fp = "/bin/"+execable_fp
