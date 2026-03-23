@@ -1,10 +1,10 @@
 package main
 
 import (
-    //"bufio"
+    "bufio"
     "syscall"
     "fmt"
-//    "strings"
+    "strings"
     "os"
     "os/exec"
     "unicode"
@@ -42,6 +42,23 @@ func main() {
     var arg_vars []string
     var env_vars []string
     var status syscall.WaitStatus
+
+    //env_vars = append(env_vars, "A=1")
+    file, err := os.Open("envs")
+    if err == nil {
+        fmt.Println("Loading envs file")
+    
+        defer file.Close()
+
+        scanner := bufio.NewScanner(file)
+
+        for scanner.Scan() {
+            text := scanner.Text()
+            if strings.Contains(text, "=") {
+                env_vars = append(env_vars, text)
+            }
+        }
+    }
 
     exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
     exec.Command("stty", "-F", "-echo").Run()
