@@ -52,7 +52,7 @@ func main() {
         var b []byte = make([]byte, 1)
         for {
             os.Stdin.Read(b)
-            if b[0] == 13 {
+            if b[0] == 10 { // was 13 for some reason
                 break
             } else if b[0] == 127 && len(command) != 0 {
                 command = command[:len(command)-1]
@@ -68,6 +68,13 @@ func main() {
         fields = Fields(command)
         arg_vars = fields
         execable_fp = fields[0]
+        err := syscall.Access("/bin/"+execable_fp, syscall.F_OK)
+        if err == nil {
+            execable_fp = "/bin/"+execable_fp
+        } else if syscall.Access(execable_fp, syscall.F_OK) != nil {
+            fmt.Println("Invalid executable path")
+            continue
+        }
         id, _, _ := syscall.Syscall(syscall.SYS_FORK, 0, 0, 0)
         if id == 0 {
             syscall.Exec(execable_fp, arg_vars, env_vars)
