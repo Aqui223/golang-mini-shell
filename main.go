@@ -19,7 +19,14 @@ func Fields(s string) []string {
     for i, r := range s {
         if unicode.IsSpace(r) {
             if (start < i) && (!in_quote) {
-                fields = append(fields, s[start:i])
+                was_quote := s[i-1] == "\""[0] && s[start] == "\""[0]
+                var was_quote_int int
+                if was_quote {
+                    was_quote_int = 1
+                } else {
+                    was_quote_int = 0
+                }
+                fields = append(fields, s[start+was_quote_int:i-was_quote_int])
             }
             if !in_quote {
                 start = i+1
@@ -30,7 +37,14 @@ func Fields(s string) []string {
         }
     }
     if start != len(s) {
-        fields = append(fields, s[start:])
+        was_quote := s[len(s)-1] == "\""[0] && s[start] == "\""[0]
+        var was_quote_int int
+        if was_quote {
+            was_quote_int = 1
+        } else {
+            was_quote_int = 0
+        }
+        fields = append(fields, s[start+was_quote_int:len(s)-was_quote_int])
     }
     return fields
 }
@@ -77,7 +91,7 @@ func main() {
                 break
             } else if b[0] == 127 && len(command) != 0 {
                 command = command[:len(command)-1]
-                fmt.Print("\x1b[3D   \x1b[3D")
+                fmt.Print("\r$ "+command+"\033[0J")
             } else {
                 command += string([]byte{b[0]})
             }
