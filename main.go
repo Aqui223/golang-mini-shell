@@ -81,7 +81,10 @@ func main() {
         defer file.Close()
         scanner := bufio.NewScanner(file)
         for scanner.Scan() {
-            bash_history = append(bash_history, scanner.Text())
+            text := scanner.Text()
+            if len(text) < 30 {
+                bash_history = append(bash_history, text)
+            }
         }
     }
 
@@ -126,7 +129,7 @@ func main() {
                             score += 1 / float64(i+1)
                         }
                     }
-                    if score > best_match_score {
+                    if score >= best_match_score {
                         best_match_score = score
                         best_match = history_line_number
                     }
